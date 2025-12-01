@@ -6,8 +6,27 @@ pub const LineIterator = struct {
     file_reader: std.fs.File.Reader,
     allocator: std.mem.Allocator,
 
-    pub fn init(path: []const u8, allocator: std.mem.Allocator) !LineIterator {
-        const file = try std.fs.cwd().openFile(path, .{});
+    pub fn init(allocator: std.mem.Allocator) !LineIterator {
+        const folder_name = std.os.argv[1];
+        const file_name =
+            if (std.os.argv.len == 3 and std.mem.eql(u8, std.mem.span(std.os.argv[2]), "test"))
+                "test.txt"
+            else
+                "input.txt";
+
+        const path = try std.fmt.allocPrint(allocator, "input/{s}/{s}", .{ folder_name, file_name });
+        defer allocator.free(path);
+
+        const file = std.fs.cwd().openFile(path, .{}) catch |err| {
+            switch (err) {
+                error.FileNotFound => {
+                    std.debug.print("Error: File not found: {s}\n", .{path});
+                    return err;
+                },
+                else => return err,
+            }
+        };
+
         const buf = try allocator.alloc(u8, 1024);
         const file_reader = file.reader(buf);
         return LineIterator{
@@ -24,7 +43,7 @@ pub const LineIterator = struct {
     }
 
     pub fn next(self: *LineIterator) ?[]u8 {
-        const reader  = &self.file_reader.interface;
+        const reader = &self.file_reader.interface;
         return reader.takeDelimiter('\n') catch return null;
     }
 

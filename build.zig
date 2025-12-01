@@ -38,6 +38,8 @@ pub fn build(b: *std.Build) void {
 
         run_day_cmd.step.dependOn(b.getInstallStep());
 
+        const day_args = [_][]u8{day_module_name};
+        run_day_cmd.addArgs(&day_args);
         if (b.args) |args| {
             run_day_cmd.addArgs(args);
         }

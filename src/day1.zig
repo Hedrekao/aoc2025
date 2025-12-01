@@ -5,7 +5,7 @@ pub fn main() !void {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
     const allocator = gpa.allocator();
 
-    var lines = try utils.LineIterator.init("input/day1/input.txt", allocator);
+    var lines = try utils.LineIterator.init(allocator);
     defer lines.deinit();
 
     try part1(&lines);
