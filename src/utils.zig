@@ -27,4 +27,9 @@ pub const LineIterator = struct {
         const reader  = &self.file_reader.interface;
         return reader.takeDelimiter('\n') catch return null;
     }
+
+    pub fn reset(self: *LineIterator) !void {
+        try self.file.seekTo(0);
+        self.file_reader = self.file.reader(self.buf);
+    }
 };
