@@ -27,7 +27,7 @@ pub const LineIterator = struct {
             }
         };
 
-        const buf = try allocator.alloc(u8, 1024);
+        const buf = try allocator.alloc(u8, 8128);
         const file_reader = file.reader(buf);
         return LineIterator{
             .file = file,
