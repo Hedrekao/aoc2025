@@ -15,7 +15,7 @@ pub fn build(b: *std.Build) void {
         const day_module_name = b.fmt("day{d}", .{picked_day});
         const day_source_file = b.path(b.fmt("src/day{d}.zig", .{picked_day}));
 
-        const day_module = b.addModule(day_module_name, .{
+        var day_module = b.addModule(day_module_name, .{
             .root_source_file = day_source_file,
             .target = target,
             .optimize = optimize,
@@ -23,6 +23,11 @@ pub fn build(b: *std.Build) void {
                 .{ .name = "utils", .module = utils },
             },
         });
+
+        if (picked_day == 10) {
+            day_module.link_libc = true;
+            day_module.linkSystemLibrary("z3", .{});
+        }
 
         const day_exe = b.addExecutable(.{
             .name = day_module_name,

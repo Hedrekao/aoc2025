@@ -52,3 +52,49 @@ pub const LineIterator = struct {
         self.file_reader = self.file.reader(self.buf);
     }
 };
+
+pub fn Queue(comptime T: type) type {
+    return struct {
+        items: []T,
+        capacity: usize,
+        back: usize,
+        front: usize,
+        allocator: std.mem.Allocator,
+
+        const Self = @This();
+
+        pub fn init(allocator: std.mem.Allocator, capacity: usize) !Queue(T) {
+            const buf = try allocator.alloc(T, capacity);
+            return .{ .allocator = allocator, .capacity = capacity, .back = 0, .front = 0, .items = buf };
+        }
+
+        pub fn deinit(self: *Self) void {
+            self.allocator.free(self.items);
+        }
+
+        pub fn enqueue(self: *Self, val: T) !void {
+            if ((self.back + 1) % self.capacity == self.front) {
+                return error.QueueFull;
+            }
+            self.items[self.back] = val;
+            self.back = (self.back + 1) % self.capacity;
+        }
+
+        pub fn dequeue(self: *Self) ?T {
+            if (self.front == self.back) {
+                return null;
+            }
+            const val = self.items[self.front];
+            self.front = (self.front + 1) % self.capacity;
+            return val;
+        }
+
+        pub fn isEmpty(self: *Self) bool {
+            return self.front == self.back;
+        }
+
+        pub fn isFull(self: *Self) bool {
+            return (self.back + 1) % self.capacity == self.front;
+        }
+    };
+}
